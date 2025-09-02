@@ -14,4 +14,7 @@ class ConsoleClass:
         
         ConsoleClass.__console.print(message)
 
+    @staticmethod
+    def clear():
+        ConsoleClass.__console.clear()
     

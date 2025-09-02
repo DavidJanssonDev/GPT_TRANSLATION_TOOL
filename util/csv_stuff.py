@@ -8,7 +8,9 @@ class CSV_DataHolder:
 
     data: dict[str, list[Any]] = field(init=False, default_factory=dict)
     headers: list[str]         = field(init=False, default_factory=list)
-    data_frame: DataFrame       = field(init=False)
+    data_frame: DataFrame      = field(init=False)
+
+    _file_loaded: bool         = field(init=False, default_factory=bool) 
 
     @classmethod
     def generate_from_data(cls, data_frame:DataFrame)-> "CSV_DataHolder":
@@ -31,5 +33,5 @@ class CSV_DataHolder:
         self.data_frame = data_frame.rename(columns=str)
         self.data = cast(dict[str, list[Any]], data_frame.to_dict(orient="list"))
         self.headers = data_frame.columns.astype(str).tolist()
-
         return self
+

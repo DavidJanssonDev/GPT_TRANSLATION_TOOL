@@ -1,0 +1,14 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class Settings:
+    OutputPath: str
+    InputPath:  str
+
+
+    def _set_output_path(self):
+        pass
+    
+    def _set_input_path(self):
+        pass
