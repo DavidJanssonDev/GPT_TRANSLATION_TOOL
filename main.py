@@ -4,7 +4,7 @@ from subprocess import run, CompletedProcess
 
 class MainProject:
     def __init__(self, File_path) -> None:
-        self.Requirements_File_path = 
+        self.Requirements_File_path = File_path
 
     def check_pip_installations(self) -> None:
         
