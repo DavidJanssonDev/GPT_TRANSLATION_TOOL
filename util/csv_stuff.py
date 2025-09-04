@@ -12,6 +12,10 @@ class CSV_DataHolder:
 
     _file_loaded: bool         = field(init=False, default_factory=bool) 
 
+    _file_input_path: str      = field(init=False, default_factory=str)
+    _file_output_path: str      = field(init=False, default_factory=str)
+
+
     @classmethod
     def generate_from_data(cls, data_frame:DataFrame)-> "CSV_DataHolder":
         """

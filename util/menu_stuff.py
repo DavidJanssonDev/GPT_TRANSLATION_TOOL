@@ -182,7 +182,7 @@ class MenuSystem:
             idx = self._ask_select()
             
             if idx is None:          # cancelled
-                print("Goodbye!")
+                ConsoleClass.printing("Goodbye!")
                 break
             
             if not self._activate_choice_index(idx):
@@ -196,16 +196,12 @@ class MenuSystem:
         sett_output_path_menu: Menu = Menu("Sett Output path") \
             .add_action("Sett", "sett output path", self.main.settings._set_output_path)
         
-        sett_input_path_menu: Menu = Menu("Sett Output path") \
-            .add_action("Sett", "sett output path", self.main.settings._set_input_path)
-        
         sett_path_menu: Menu = Menu("Sett Paths") \
-            .add_submenu("Change input  Path", "Sett where the input path is loacated" , sett_input_path_menu) \
-            .add_submenu("Change output Path", "Sett where the output path is loacated", sett_output_path_menu)
+            .add_submenu("Change output Path", "Sett where the output file should be placed at", sett_output_path_menu)
         
 
         load_csv_menu: Menu = Menu("Load CSV") \
-            .add_action("Load CSV", "Load the CSV File thats going to transalte",self.main._load_csv)
+            .add_action("Load CSV", "Load the CSV File thats going to transalte", self.main._load_csv)
 
         load_settings_menu: Menu = Menu("Settings") \
             .add_submenu("Set File Path", "Change output & input path", sett_path_menu)

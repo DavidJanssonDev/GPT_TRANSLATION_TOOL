@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Any
 from rich.console import Console
 
@@ -18,3 +19,6 @@ class ConsoleClass:
     def clear():
         ConsoleClass.__console.clear()
     
+    @staticmethod
+    def wait(seconds: float) -> None:
+        return sleep(seconds)

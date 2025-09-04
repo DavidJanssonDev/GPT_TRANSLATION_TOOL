@@ -1,4 +1,4 @@
-from util.input_script import InputData, input_csv_type
+from util.input_script import InputData, InputTypeEnum, _ask_for_output_folder_path, path_input
 from util.csv_stuff import CSV_DataHolder        # noqa: E402
 from util.settings import Settings               # noqa: E402
 from util.menu_stuff import MenuSystem           # noqa: E402
@@ -23,9 +23,11 @@ class MainProject:
         self.MenuSystem: MenuSystem = MenuSystem(self)
 
 
-    def _load_csv(self):
-        data: InputData = input_csv_type()
 
+
+    def _load_csv(self):
+        data: InputData = path_input("Select CSV TYPE", InputTypeEnum.File, "*.csv")
+        
         # Handle cancel / error gracefully (don’t crash the menu)
         if data.cancelInput:
             return
@@ -51,7 +53,10 @@ class MainProject:
    
 
 if __name__ == "__main__":
-    project: MainProject = MainProject("requirements.txt")
-    project.run()
-
+    # quick standalone test for folder selection
+    folder = _ask_for_output_folder_path()
+    if folder is None:
+        print("❌ User canceled.")
+    else:
+        print(f"✅ Selected folder: {folder}")
 
