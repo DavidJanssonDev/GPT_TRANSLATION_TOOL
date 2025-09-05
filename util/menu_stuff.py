@@ -146,22 +146,24 @@ class MenuSystem:
             ) \
         .ask()
 
-    def _activate_choice_index(self, idx: int) -> bool:
-        eff = self._effective_choices()
-        if not (0 <= idx < len(eff)):
+    def _activate_choice_index(self, index: int) -> bool:
+        effective_choices = self._effective_choices()
+        if not (0 <= index < len(effective_choices)):
             return True  # ignore and continue
 
-        ch = eff[idx]
-        if ch["type"] == "exit":      # only present on root
+        choice = effective_choices[index]
+        
+        if choice["type"] == "exit":      # only present on root
             ConsoleClass.printing("Goodbye!")
             return False              # stop loop
 
-        if ch["type"] == "back":      # only present on submenus
+        if choice["type"] == "back":      # only present on submenus
             self.menus.pop()
             return True
 
         # Item
-        menuItem: MenuItem = ch["item"]
+        menuItem: MenuItem = choice["item"]
+        
         if not menuItem.is_enabled():
             ConsoleClass.printing("This option is disabled.")
             return True
@@ -176,6 +178,28 @@ class MenuSystem:
                 self.on_after_action(self.current, menuItem)
         return True
 
+    def setup_menus(self) -> list[Menu]:
+
+        temp_list: list[Menu] = []
+
+        sett_output_path_menu: Menu = Menu("Sett Output path") \
+            .add_action("Sett", "sett output path", self.main.settings._set_output_path)
+        
+        sett_path_menu: Menu = Menu("Sett Paths") \
+            .add_submenu("Change output Path", "Sett where the output file should be placed at", sett_output_path_menu)
+        
+        load_settings_menu: Menu = Menu("Settings") \
+            .add_submenu("Set File Path", "Change output & input path", sett_path_menu)
+        
+        main_menu: Menu = Menu("Main Menu") \
+            .add_action("Translate", "Translate", self.main.TransalteSystem._transalate, enabled=lambda: self.main.CSV_Data._file_loaded) \
+            .add_action("Load File","CSV menu", self.main._load_csv) \
+            .add_submenu("Settings", "Settings for the progra",load_settings_menu)
+        
+        temp_list.append(main_menu)
+
+        return temp_list
+
     def run(self) -> None:
         while True:
             self._render()
@@ -187,32 +211,3 @@ class MenuSystem:
             
             if not self._activate_choice_index(idx):
                 break
-    
-
-    def setup_menus(self) -> list[Menu]:
-
-        temp_list: list[Menu] = []
-
-        sett_output_path_menu: Menu = Menu("Sett Output path") \
-            .add_action("Sett", "sett output path", self.main.settings._set_output_path)
-        
-        sett_path_menu: Menu = Menu("Sett Paths") \
-            .add_submenu("Change output Path", "Sett where the output file should be placed at", sett_output_path_menu)
-        
-
-        load_csv_menu: Menu = Menu("Load CSV") \
-            .add_action("Load CSV", "Load the CSV File thats going to transalte", self.main._load_csv)
-
-        load_settings_menu: Menu = Menu("Settings") \
-            .add_submenu("Set File Path", "Change output & input path", sett_path_menu)
-        
-        main_menu: Menu = Menu("Main Menu") \
-            .add_action("Translate", "Translate", self.main.TransalteSystem._transalate, enabled=lambda: self.main.CSV_Data._file_loaded) \
-            .add_submenu("Load File","CSV menu", load_csv_menu) \
-            .add_submenu("Settings", "Settings for the progra",load_settings_menu)
-        
-        temp_list.append(main_menu)
-
-        return temp_list
-
-
