@@ -137,7 +137,7 @@ class FileFolderInput:
 
     # ---------------- Dispatcher ---------------- #
 
-    def _selected_type(self) -> None | FileFunctionType | FolderFunctionType :
+    def _selected_type(self):
         choice = select(
             self.message,
             choices=["Browse...(EasyGUI)", "Type or paste a path (Questionary)", "Cancel"]
@@ -160,37 +160,29 @@ class FileFolderInput:
     # ---------------- Public API ---------------- #
 
     def get_path(self) -> InputData:
-        func: None | FileFunctionType | FolderFunctionType  = self._selected_type()
+        func = self._selected_type()
 
         if func is None:
             text = "No File Selected" if self.mode is InputModeEnum.File else "No Folder Selected"
             return InputData(None, None, cancelInput=True, erroring=FileExistsError(text))
-        
-        match self.mode:
-            
-            case InputModeEnum.File:
-                file_func: FileFunctionType = cast(FileFunctionType, func) 
 
-                path: str | None  = file_func()
-            
-                if not path:
-                    return InputData(None, None, cancelInput=True, erroring=FileExistsError("No File Selected"))
-            
-                try:
-                    df = read_csv(path)
-                except Exception as e:
-                    return InputData(None, path, erroring=e)
-                return InputData(df, path)
+        ConsoleClass.printing(self.mode)
 
-            
-            case InputModeEnum.Folder:
-                folder_func: FolderFunctionType = cast(FolderFunctionType, func)
-            
-                path: str | None = folder_func()
-                
-                if not path:
-                    return InputData(None, None, cancelInput=True, erroring=FileExistsError("No Folder Selected"))
-                return InputData(None, path)
+        if self.mode is InputModeEnum.File:
+            path = cast(FileFunctionType, func)()
+            if not path:
+                return InputData(None, None, cancelInput=True, erroring=FileExistsError("No File Selected"))
+            try:
+                df = read_csv(path)
+            except Exception as e:
+                return InputData(None, path, erroring=e)
+            return InputData(df, path)
+
+        elif self.mode is InputModeEnum.Folder:
+            path = cast(FolderFunctionType, func)()
+            if not path:
+                return InputData(None, None, cancelInput=True, erroring=FileExistsError("No Folder Selected"))
+            return InputData(None, path)
 
         raise SystemError("Unexpected input type")
 

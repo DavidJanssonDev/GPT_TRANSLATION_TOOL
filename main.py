@@ -1,4 +1,4 @@
-from util.input_script import InputData, InputTypeEnum, path_input
+from util.input_script import InputData,FileFolderInput, InputModeEnum
 from util.csv_stuff import CSV_DataHolder        # noqa: E402
 from util.settings import Settings               # noqa: E402
 from util.menu_stuff import MenuSystem           # noqa: E402
@@ -39,7 +39,10 @@ class MainProject:
         """
         Load a CSV file into the Project and makes the user go back to main menu
         """
-        data: InputData = path_input("Select CSV TYPE", InputTypeEnum.File, "*.csv")
+        
+        inputer: FileFolderInput = FileFolderInput("Select CSV TYPE", InputModeEnum.File, "*.csv")
+
+        data: InputData = inputer.get_path()
         
         # Handle cancel / error gracefully (don’t crash the menu)
         if data.cancelInput:

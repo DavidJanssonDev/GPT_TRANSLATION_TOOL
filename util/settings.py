@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..main import MainProject
 
 from .console_stuff import ConsoleClass
-from .input_script import InputTypeEnum, InputData, path_input
+from .input_script import InputData, InputModeEnum, FileFolderInput
 
 
 @dataclass
@@ -17,7 +17,9 @@ class Settings:
 
     def _set_output_path(self)-> None:
         
-        data: InputData = path_input("Select Output Folder", InputTypeEnum.Folder, None)
+        inputer: FileFolderInput = FileFolderInput("Select Output Folder", InputModeEnum.Folder, None)
+        
+        data: InputData = inputer.get_path()
 
         if data.cancelInput:
             return
