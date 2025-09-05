@@ -10,53 +10,79 @@ from pandas import DataFrame, read_csv
 
 from .console_stuff import ConsoleClass
 
+
 FileFunctionType: TypeAlias = Callable[[str, str | None], str | None]
 FolderFunctionType: TypeAlias = Callable[[str], str | None]
 
 
 
+# ---------------- INPUTCLASS ---------------- #
+
 @dataclass
 class InputData:
     """
-    
+    Container for storing input data and related metadata
+
+    Args: 
+        dataFile    (DataFrame | None): Loaded DataFrame when reading a CSV file.
+        dataPath    (str       | None): The Path of selected file or folder.
+        cancelInput (            bool): Indicates if the input was canceled.
+        erroring    (Exception | None): Holds error information if any occurred.
+
+    Return: 
+        None 
     """
     dataFile: DataFrame | None
-    PathDat: str | None
+    dataPath: str | None
     cancelInput: bool   = False 
     erroring: Exception | None = None
 
 # ----------------   Enum     ---------------- #
 
 class InputTypeEnum(StrEnum):
+    """
+    Enum for defining the type of input
+
+    Args:
+        Folder: Indicates a folder selection.
+        File: Indicates a file selection
+    
+    Return:
+        None
+    """
     Folder = "folder"
     File = "File"
 
-
-
 # ---------------- Validators ---------------- #
-class CSVValidator(Validator):
-    def validate(self, document):
-        path = (document.text or "").strip()
-        if not path:
-            raise ValidationError(message="Please enter a path")
-        if not path.lower().endswith(".csv"):
-            raise ValidationError(
-                message="Only .csv files are allowed.",
-                cursor_position=len(path),
-            )
-        path = os.path.expanduser(path)
-        if not os.path.isfile(path):
-            raise ValidationError(
-                message="That file doesn't exist.",
-                cursor_position=len(path),
-            )
 
 class FileValidator(Validator):
+    """
+    Validator for ensuring a valid file path with correct extensions.
+
+    Args:
+        Validator (list[str] | None): List of allowed extentions
+
+    """
+    
     def __init__(self, extensions: list[str] | None = None) -> None:
         super().__init__()
-        self.extensions = [ext.lower() for ext in (extensions or [])]
+        
+
+        self.extensions = [f".{ext.lower().split(".")[1]}" for ext in extensions or []]
 
     def validate(self, document: Document) -> None:
+        """
+
+        Validator for ensuring a valid file path with correct extensions.
+
+        Args:
+            document (Document): The document containing the input path.
+
+        Raises:
+            ValidationError: If path is not enterd 
+            ValidationError: File dosent Exist 
+            ValidationError: File is not in a vailid extention
+        """
         path = (document.text or "").strip()
 
         if not path:
@@ -71,15 +97,30 @@ class FileValidator(Validator):
             )
         
         if self.extensions:
-            _, ext = os.path.splitext(path)
-            if ext.lower() not in self.extensions:
-                raise ValidationError(
-                    message=f"File must be one of: {', '.join(self.extensions)}",
-                    cursor_position=len(document.text or "")
-                )
+            for extension in self.extensions:
+                if not path.endswith(extension):
+                    raise ValidationError(
+                        message=f"{self.extensions}",
+                        cursor_position=len(document.text or "")
+                    )
 
 class FolderValidator(Validator):
+    """
+    Validator for ensuring a valid folder path is provided.
+    """
     def validate(self, document):
+        """
+        
+        Validator for ensuring a valid folder path is provided. 
+
+        Args:
+            document (Document):  The document containing the input path.
+
+        Raises:
+            ValidationError: If the path is None
+            ValidationError: Is the folder dosent exists
+        """
+
         path = (document.text or "").strip()
         if not path:
             raise ValidationError(message="Please enter a path")
@@ -94,6 +135,18 @@ class FolderValidator(Validator):
 # ---------------- File Inputs ---------------- #
 
 def _select_file_path_easygui(message: str, file_type: str | None) -> str | None:
+    """
+
+    Select file path with GUI 
+
+    Args:
+        message   (str       ): The message in the console is responding when opening the file system  
+        file_type (str | None): the file path
+
+    Returns:
+        str | None: The file path to file
+    """
+
     vaildate_file_types: list[str] | None = [file_type] if file_type is not None else None
 
     picked_file_path = fileopenbox(
@@ -114,6 +167,17 @@ def _select_file_path_easygui(message: str, file_type: str | None) -> str | None
     return None
 
 def _select_file_path_questionary(massage: str, file_type: str | None )-> str | None:
+    """
+
+    Gets a path for a file with questionary
+
+    Args:
+        message   (str       ): The message in the console is responding when opening the file system  
+        file_type (str | None): the file path
+
+    Returns:
+        str | None: The file path to file
+    """
     validate_file_type: list[str] | None  = [file_type] if file_type is not None else None
 
     picked_file_path: str | None = Qpath(
@@ -131,6 +195,16 @@ def _select_file_path_questionary(massage: str, file_type: str | None )-> str | 
 # ---------------- Folder Inputs ---------------- #
 
 def _select_folder_path_easygui(message: str) -> str | None:
+    """
+    
+    Selects the folder that
+
+    Args:
+        message (str): _description_
+
+    Returns:
+        str | None: _description_
+    """
     picked_folder_path: str | None = diropenbox(
         msg=message,
         title=message,
@@ -174,6 +248,25 @@ def _selected_type(
                 tuple[FolderFunctionType, FolderFunctionType]
                 ]
         ) -> FileFunctionType | FolderFunctionType | None:
+    """
+    
+    Select what fucntion that is needed
+
+    Args:
+        message (str): _description_
+        type_of_input_choices (list[str]): _description_
+        type_of_input (InputTypeEnum): _description_
+        type_input_dict (
+            dict[
+                InputTypeEnum,
+                tuple[FileFunctionType, FileFunctionType]  |  
+                tuple[FolderFunctionType, FolderFunctionType] 
+                ]
+            ): THe dict that holds the correct function
+
+    Returns:
+        FileFunctionType | FolderFunctionType | None: Retuns the choisce of function or none for what the user use to do
+    """
     while True:
         choice: str = select(
             message,
@@ -211,9 +304,12 @@ def path_input(message: str, type_of_input: InputTypeEnum, type_of_file: str | N
     if type_of_function is None:
         text = "No File Selected" if type_of_file is InputTypeEnum.File else "No Folder Selected" 
         return InputData(None,None , cancelInput=True, erroring=FileExistsError(text))
-
+    
+    ConsoleClass.printing(type_of_input)
+    ConsoleClass.printing(f"IS FILE: {type_of_input is InputTypeEnum.File}")
+    ConsoleClass.printing(f"IS FILE: {type_of_input is InputTypeEnum.Folder}")
     # IF the function was a FileType
-    if type(type_of_function) is FileFunctionType:
+    if type_of_input is InputTypeEnum.File:
         
         path: str | None = cast(FileFunctionType, type_of_function)(message, type_of_file)
 
@@ -230,7 +326,7 @@ def path_input(message: str, type_of_input: InputTypeEnum, type_of_file: str | N
     
     
     
-    elif type(type_of_function) is FolderFunctionType:
+    elif type_of_input is InputTypeEnum.Folder:
         
         path: str | None = cast(FolderFunctionType, type_of_function)(message)
 
@@ -248,45 +344,9 @@ def path_input(message: str, type_of_input: InputTypeEnum, type_of_file: str | N
 
 
 
-
-def _ask_for_output_folder_path() -> None | str:
-    while True:
-        choice: str = select(
-            "Pick an output folder:",
-            choices=["Browse...(EasyGUI)", "Type or paste a path (Questionary)", "Cancel"],
-        ).ask()
-
-        if choice in (None, "Cancel"):
-            return None
-
-        if choice.startswith("Browse"):
-            picked = diropenbox(
-                msg="Select an output folder:",
-                title="Select Output Folder",
-                default=os.path.expanduser("~"),
-            )
-            if picked is None:
-                continue
-            path = os.path.expanduser(str(picked)).strip()
-            if os.path.isdir(path):
-                return os.path.normpath(os.path.abspath(path))
-            ConsoleClass.printing("[yellow] That isn't a folder. Try again. [/]")
-            continue
-
-        typed: str | None = Qpath(
-            "Path to folder:",
-            validate=FolderValidator(),
-            only_directories=True,
-        ).ask()
-        if typed:
-            return os.path.normpath(os.path.abspath(os.path.expanduser(typed.strip())))
-
-
-
-
 if __name__ == "__main__":
     # quick standalone test for folder selection
-    folder = _ask_for_output_folder_path()
+    folder = path_input("Select CSV File",InputTypeEnum.File, "*.csv")
     if folder is None:
         print("❌ User canceled.")
     else:

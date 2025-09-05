@@ -2,8 +2,10 @@ from time import sleep
 from typing import Any
 from rich.console import Console
 
-class ConsoleClass: 
-
+class ConsoleClass:
+    """
+    The class that Handels printing can clearing the terminal
+    """
     __console: Console = Console()
 
 
@@ -17,6 +19,9 @@ class ConsoleClass:
 
     @staticmethod
     def clear():
+        """
+        Clear the console 
+        """
         ConsoleClass.__console.clear()
     
     @staticmethod

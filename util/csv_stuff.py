@@ -2,10 +2,13 @@ from dataclasses import dataclass, field
 from typing import Any, cast
 
 from pandas import DataFrame
+from rich import inspect
+
+from .console_stuff import ConsoleClass
 
 @dataclass
 class CSV_DataHolder:
-
+    
     data: dict[str, list[Any]] = field(init=False, default_factory=dict)
     headers: list[str]         = field(init=False, default_factory=list)
     data_frame: DataFrame      = field(init=False)
@@ -37,5 +40,7 @@ class CSV_DataHolder:
         self.data_frame = data_frame.rename(columns=str)
         self.data = cast(dict[str, list[Any]], data_frame.to_dict(orient="list"))
         self.headers = data_frame.columns.astype(str).tolist()
+        inspect(self)
+        ConsoleClass.printing("[green] Generate Data compleat [/]")
         return self
 
