@@ -1,4 +1,4 @@
-# 🔧 MyCLI Tool
+# 🔧 Translate Tool
 
 > Translate Fabella tool.  
 
